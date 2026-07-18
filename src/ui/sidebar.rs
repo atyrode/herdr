@@ -18,7 +18,7 @@ use crate::detect::AgentState;
 use crate::terminal::TerminalRuntimeRegistry;
 
 const WORKSPACE_SECTION_HEADER_ROWS: u16 = 2;
-const AGENT_PANEL_HEADER_ROWS: u16 = 3;
+pub(super) const AGENT_PANEL_HEADER_ROWS: u16 = 3;
 
 pub(crate) struct AgentPanelEntry {
     pub ws_idx: usize,
@@ -887,9 +887,11 @@ pub(super) fn render_sidebar(
     }
 
     let (ws_area, detail_area) = expanded_sidebar_sections(area, app.sidebar_section_split);
+    let layout = super::sidebar_sections::sidebar_sections_layout(app, detail_area);
 
     render_workspace_list(app, terminal_runtimes, frame, ws_area, is_navigating);
-    render_agent_detail(app, terminal_runtimes, frame, detail_area);
+    render_agent_detail(app, terminal_runtimes, frame, layout.agent_area);
+    super::sidebar_sections::render_sidebar_sections(app, frame, layout.sections_area);
     render_sidebar_toggle(app, frame, area, false, p);
 }
 
@@ -1401,7 +1403,7 @@ fn render_sidebar_toggle(
     let toggle_area = if collapsed {
         collapsed_sidebar_toggle_rect(area)
     } else {
-        expanded_sidebar_toggle_rect(area)
+        super::sidebar_sections::expanded_sidebar_toggle_rect_for_state(app, area)
     };
     if toggle_area == Rect::default() {
         return;

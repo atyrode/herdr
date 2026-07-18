@@ -16,6 +16,7 @@ mod release_notes;
 mod scrollbar;
 mod settings;
 mod sidebar;
+mod sidebar_sections;
 mod status;
 mod tabs;
 mod text;
@@ -81,6 +82,7 @@ pub(crate) use self::{
         workspace_list_scroll_metrics, workspace_list_scrollbar_rect, workspace_parent_group_state,
         WorkspaceListEntry,
     },
+    sidebar_sections::{expanded_sidebar_toggle_rect_for_state, sidebar_sections_layout},
 };
 pub(crate) use self::{
     keybind_help::keybind_help_lines,
@@ -239,6 +241,7 @@ fn compute_view_internal(
     if !app.sidebar_collapsed {
         app.workspace_scroll = normalized_workspace_scroll(app, sidebar_area, app.workspace_scroll);
         let (_, detail_area) = expanded_sidebar_sections(sidebar_area, app.sidebar_section_split);
+        let detail_area = sidebar_sections_layout(app, detail_area).agent_area;
         let max_agent_scroll = agent_panel_scroll_metrics(app, detail_area).max_offset_from_bottom;
         app.agent_panel_scroll = app.agent_panel_scroll.min(max_agent_scroll);
     } else {

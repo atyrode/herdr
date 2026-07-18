@@ -17,6 +17,7 @@ mod popup;
 mod runtime;
 mod runtime_mutations;
 mod session;
+mod sidebar_sections;
 pub mod state;
 mod terminal_targets;
 mod terminal_titles;
@@ -608,6 +609,8 @@ impl App {
             agent_panel_sort,
             sidebar_agents: config.ui.sidebar.agents.clone(),
             sidebar_spaces: config.ui.sidebar.spaces.clone(),
+            sidebar_sections_config: config.ui.sidebar.resolved_sections(),
+            sidebar_section_reports: sidebar_sections::SidebarSections::default(),
             next_agent_state_change_seq: 0,
             mouse_capture: config.ui.mouse_capture,
             copy_on_select: config.ui.copy_on_select,
@@ -1423,6 +1426,7 @@ impl App {
                     agent_panel_sort_from_config(config.ui.agent_panel_sort);
                 self.state.sidebar_agents = config.ui.sidebar.agents.clone();
                 self.state.sidebar_spaces = config.ui.sidebar.spaces.clone();
+                self.state.sidebar_sections_config = config.ui.sidebar.resolved_sections();
                 self.state.agent_panel_scroll = 0;
                 self.state.accent = crate::config::parse_color(&config.ui.accent);
                 if !self.state.local_sound_playback && self.state.sound != config.ui.sound {
@@ -2728,7 +2732,23 @@ mod tests {
 
         std::fs::write(
             &path,
-            "[ui.sidebar.agents]\nrows = [[\"state_icon\", \"$summary\"]]\nrow_gap = 1\n\n[ui.sidebar.agents.rows_by_agent]\nclaude = [[\"terminal_title_stripped\"]]\n\n[ui.sidebar.spaces]\nrows = [[\"workspace\", \"$jj_status\"]]\nrow_gap = 3\n",
+            r#"[ui.sidebar.agents]
+rows = [["state_icon", "$summary"]]
+row_gap = 1
+
+[ui.sidebar.agents.rows_by_agent]
+claude = [["terminal_title_stripped"]]
+
+[ui.sidebar.spaces]
+rows = [["workspace", "$jj_status"]]
+row_gap = 3
+
+[[ui.sidebar.sections]]
+id = "build"
+title = "Build"
+max_rows = 4
+placement = "below_agents"
+"#,
         )
         .unwrap();
         app.state.agent_panel_scroll = 5;
@@ -2758,6 +2778,15 @@ mod tests {
             ]]
         );
         assert_eq!(app.state.sidebar_spaces.row_gap, 3);
+        assert_eq!(
+            app.state.sidebar_sections_config,
+            vec![crate::config::CustomSidebarSectionConfig {
+                id: "build".into(),
+                title: Some("Build".into()),
+                max_rows: 4,
+                placement: crate::config::SidebarSectionPlacement::BelowAgents,
+            }]
+        );
 
         let previous_agents = app.state.sidebar_agents.clone();
         std::fs::write(

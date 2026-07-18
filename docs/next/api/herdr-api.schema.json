@@ -3227,6 +3227,76 @@
           ],
           "type": "string"
         },
+        "SectionRow": {
+          "oneOf": [
+            {
+              "additionalProperties": false,
+              "properties": {
+                "spans": {
+                  "items": {
+                    "$ref": "#/schemas/request/$defs/SectionSpan"
+                  },
+                  "maxItems": 8,
+                  "type": "array"
+                }
+              },
+              "required": [
+                "spans"
+              ],
+              "type": "object"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "bar": {
+                  "properties": {
+                    "fraction": {
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "label": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "fraction"
+                  ],
+                  "type": "object"
+                }
+              },
+              "required": [
+                "bar"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        "SectionSpan": {
+          "properties": {
+            "bold": {
+              "type": "boolean"
+            },
+            "color": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "dim": {
+              "type": "boolean"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "type": "object"
+        },
         "ServerLiveHandoffParams": {
           "properties": {
             "expected_protocol": {
@@ -3250,6 +3320,48 @@
               ]
             }
           },
+          "type": "object"
+        },
+        "SidebarReportSectionParams": {
+          "properties": {
+            "rows": {
+              "items": {
+                "$ref": "#/schemas/request/$defs/SectionRow"
+              },
+              "maxItems": 16,
+              "type": "array"
+            },
+            "section_id": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            "seq": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "source": {
+              "type": "string"
+            },
+            "ttl_ms": {
+              "format": "uint64",
+              "maximum": 86400000,
+              "minimum": 1,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "section_id",
+            "source",
+            "rows"
+          ],
           "type": "object"
         },
         "SplitDirection": {
@@ -4079,6 +4191,22 @@
             },
             "params": {
               "$ref": "#/schemas/request/$defs/NotificationShowParams"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ],
+          "type": "object"
+        },
+        {
+          "properties": {
+            "method": {
+              "const": "sidebar.report_section",
+              "type": "string"
+            },
+            "params": {
+              "$ref": "#/schemas/request/$defs/SidebarReportSectionParams"
             }
           },
           "required": [
