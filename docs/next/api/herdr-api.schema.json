@@ -3252,6 +3252,13 @@
                 "string",
                 "null"
               ]
+            },
+            "title": {
+              "description": "Left-aligned title rendered before the bar cells.",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           "required": [
