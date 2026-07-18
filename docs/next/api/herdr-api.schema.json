@@ -3227,11 +3227,50 @@
           ],
           "type": "string"
         },
+        "SectionBar": {
+          "properties": {
+            "empty": {
+              "description": "Color for remainder cells. Uses the span color grammar; when absent,\nremainder cells use the default dim style.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fill": {
+              "description": "Uniform color for filled cells. Uses the span color grammar; when\nabsent, filled cells use the default positional gradient.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fraction": {
+              "format": "double",
+              "type": "number"
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "fraction"
+          ],
+          "type": "object"
+        },
         "SectionRow": {
-          "oneOf": [
+          "anyOf": [
             {
-              "additionalProperties": false,
               "properties": {
+                "right": {
+                  "description": "Optional cluster rendered right-aligned after at least one cell of\nseparation from the left cluster.",
+                  "items": {
+                    "$ref": "#/schemas/request/$defs/SectionSpan"
+                  },
+                  "maxItems": 8,
+                  "type": "array"
+                },
                 "spans": {
                   "items": {
                     "$ref": "#/schemas/request/$defs/SectionSpan"
@@ -3246,25 +3285,9 @@
               "type": "object"
             },
             {
-              "additionalProperties": false,
               "properties": {
                 "bar": {
-                  "properties": {
-                    "fraction": {
-                      "format": "double",
-                      "type": "number"
-                    },
-                    "label": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "fraction"
-                  ],
-                  "type": "object"
+                  "$ref": "#/schemas/request/$defs/SectionBar"
                 }
               },
               "required": [
@@ -3280,6 +3303,7 @@
               "type": "boolean"
             },
             "color": {
+              "description": "Named theme token or `#rrggbb`.",
               "type": [
                 "string",
                 "null"
@@ -3325,10 +3349,11 @@
         "SidebarReportSectionParams": {
           "properties": {
             "rows": {
+              "description": "Rows to display. An empty list from the owning source clears the\nsection and releases ownership for another source.",
               "items": {
                 "$ref": "#/schemas/request/$defs/SectionRow"
               },
-              "maxItems": 16,
+              "maxItems": 24,
               "type": "array"
             },
             "section_id": {
@@ -3345,6 +3370,7 @@
               ]
             },
             "source": {
+              "description": "Stable reporter identity. The first accepted non-empty report owns the\nsection until that owner clears it or its content expires.",
               "type": "string"
             },
             "ttl_ms": {
