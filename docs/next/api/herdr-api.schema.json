@@ -3259,6 +3259,13 @@
                 "string",
                 "null"
               ]
+            },
+            "title_color": {
+              "description": "Color for the title. Uses the span color grammar.",
+              "type": [
+                "string",
+                "null"
+              ]
             }
           },
           "required": [
