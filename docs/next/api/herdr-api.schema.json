@@ -3253,6 +3253,25 @@
                 "null"
               ]
             },
+            "label_spans": {
+              "description": "Styled right-aligned label fragments. When present, these override\n`label`. The joined fragments are measured and truncated as one unit.",
+              "items": {
+                "$ref": "#/schemas/request/$defs/SectionSpan"
+              },
+              "maxItems": 8,
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "match_values": {
+              "description": "Focus-matching values for this row. When its section config names a\npane metadata token, the row is marked while the focused pane's token\nvalue equals any entry. At most 8 values of 200 characters each.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 8,
+              "type": "array"
+            },
             "title": {
               "description": "Left-aligned title rendered before the bar cells.",
               "type": [

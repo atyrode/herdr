@@ -39,6 +39,7 @@ pub const CONFIG_PATH_ENV_VAR: &str = "HERDR_CONFIG_PATH";
 pub const DEFAULT_SCROLLBACK_LIMIT_BYTES: usize = 10_000_000;
 pub const DEFAULT_MOUSE_SCROLL_LINES: usize = 3;
 pub const DEFAULT_MOBILE_WIDTH_THRESHOLD: u16 = 64;
+pub const DEFAULT_SIDEBAR_SECTIONS_HEIGHT: u16 = 8;
 
 #[cfg(test)]
 pub(crate) fn app_dir_name() -> &'static str {

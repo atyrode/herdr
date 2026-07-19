@@ -25,6 +25,8 @@ pub struct SessionSnapshot {
     #[serde(default)]
     pub sidebar_section_split: Option<f32>,
     #[serde(default)]
+    pub sidebar_sections_height: Option<u16>,
+    #[serde(default)]
     pub collapsed_space_keys: std::collections::HashSet<String>,
 }
 
@@ -181,6 +183,8 @@ struct RawSessionSnapshot {
     #[serde(default)]
     sidebar_section_split: Option<f32>,
     #[serde(default)]
+    sidebar_sections_height: Option<u16>,
+    #[serde(default)]
     collapsed_space_keys: std::collections::HashSet<String>,
 }
 
@@ -196,6 +200,7 @@ fn migrate_snapshot(raw: RawSessionSnapshot) -> Result<SessionSnapshot, String> 
         selected: raw.selected,
         sidebar_width: raw.sidebar_width,
         sidebar_section_split: raw.sidebar_section_split,
+        sidebar_sections_height: raw.sidebar_sections_height,
         collapsed_space_keys: raw.collapsed_space_keys,
     })
 }
@@ -258,6 +263,7 @@ pub fn capture(
     selected: usize,
     sidebar_width: u16,
     sidebar_section_split: f32,
+    sidebar_sections_height: u16,
     collapsed_space_keys: std::collections::HashSet<String>,
 ) -> SessionSnapshot {
     SessionSnapshot {
@@ -270,6 +276,7 @@ pub fn capture(
         selected,
         sidebar_width: Some(sidebar_width),
         sidebar_section_split: Some(sidebar_section_split),
+        sidebar_sections_height: Some(sidebar_sections_height),
         collapsed_space_keys,
     }
 }
@@ -538,6 +545,7 @@ mod tests {
             state.selected,
             state.sidebar_width,
             state.sidebar_section_split,
+            state.sidebar_sections_height,
             state.collapsed_space_keys.clone(),
         )
     }
@@ -565,6 +573,7 @@ mod tests {
             selected: 0,
             sidebar_width: Some(26),
             sidebar_section_split: Some(0.5),
+            sidebar_sections_height: Some(8),
             collapsed_space_keys: std::collections::HashSet::new(),
         };
         let json = serde_json::to_string(&snap).unwrap();
@@ -573,6 +582,7 @@ mod tests {
         assert_eq!(restored.active, None);
         assert_eq!(restored.sidebar_width, Some(26));
         assert_eq!(restored.sidebar_section_split, Some(0.5));
+        assert_eq!(restored.sidebar_sections_height, Some(8));
     }
 
     #[test]
@@ -650,6 +660,7 @@ mod tests {
             selected: 0,
             sidebar_width: Some(26),
             sidebar_section_split: Some(0.5),
+            sidebar_sections_height: Some(8),
             collapsed_space_keys: std::collections::HashSet::new(),
             version: SNAPSHOT_VERSION,
         };
@@ -1204,6 +1215,7 @@ mod tests {
             selected: 0,
             sidebar_width: Some(26),
             sidebar_section_split: Some(0.5),
+            sidebar_sections_height: Some(8),
             collapsed_space_keys: std::collections::HashSet::new(),
         };
 

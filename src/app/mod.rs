@@ -376,6 +376,8 @@ impl App {
             sidebar_width,
             sidebar_width_source,
             sidebar_section_split,
+            sidebar_sections_height,
+            sidebar_sections_height_source,
             collapsed_space_keys,
         ) = if no_session {
             (
@@ -385,6 +387,8 @@ impl App {
                 config.ui.sidebar_width,
                 state::SidebarWidthSource::ConfigDefault,
                 0.5_f32,
+                config.ui.sidebar_sections_height,
+                state::SidebarSectionsHeightSource::ConfigDefault,
                 std::collections::HashSet::new(),
             )
         } else if let Some(snap) = crate::persist::load() {
@@ -421,6 +425,13 @@ impl App {
                         state::SidebarWidthSource::ConfigDefault
                     },
                     snap.sidebar_section_split.unwrap_or(0.5),
+                    snap.sidebar_sections_height
+                        .unwrap_or(config.ui.sidebar_sections_height),
+                    if snap.sidebar_sections_height.is_some() {
+                        state::SidebarSectionsHeightSource::Persisted
+                    } else {
+                        state::SidebarSectionsHeightSource::ConfigDefault
+                    },
                     snap.collapsed_space_keys,
                 )
             } else {
@@ -438,6 +449,13 @@ impl App {
                         state::SidebarWidthSource::ConfigDefault
                     },
                     snap.sidebar_section_split.unwrap_or(0.5),
+                    snap.sidebar_sections_height
+                        .unwrap_or(config.ui.sidebar_sections_height),
+                    if snap.sidebar_sections_height.is_some() {
+                        state::SidebarSectionsHeightSource::Persisted
+                    } else {
+                        state::SidebarSectionsHeightSource::ConfigDefault
+                    },
                     snap.collapsed_space_keys,
                 )
             }
@@ -449,6 +467,8 @@ impl App {
                 config.ui.sidebar_width,
                 state::SidebarWidthSource::ConfigDefault,
                 0.5_f32,
+                config.ui.sidebar_sections_height,
+                state::SidebarSectionsHeightSource::ConfigDefault,
                 std::collections::HashSet::new(),
             )
         };
@@ -606,6 +626,9 @@ impl App {
             sidebar_collapsed: false,
             sidebar_collapsed_mode: config.ui.sidebar_collapsed_mode,
             sidebar_section_split,
+            default_sidebar_sections_height: config.ui.sidebar_sections_height,
+            sidebar_sections_height,
+            sidebar_sections_height_source,
             agent_panel_sort,
             sidebar_agents: config.ui.sidebar.agents.clone(),
             sidebar_spaces: config.ui.sidebar.spaces.clone(),
@@ -817,6 +840,11 @@ impl App {
         }
         if let Some(split) = snapshot.sidebar_section_split {
             app.state.sidebar_section_split = split;
+        }
+        if let Some(height) = snapshot.sidebar_sections_height {
+            app.state.sidebar_sections_height_source =
+                state::SidebarSectionsHeightSource::Persisted;
+            app.state.sidebar_sections_height = height;
         }
         app.state.collapsed_space_keys = snapshot.collapsed_space_keys.clone();
         app.state.mode = if app.state.active.is_some() {
@@ -1384,6 +1412,12 @@ impl App {
                 }
                 self.state.sidebar_min_width = config.ui.sidebar_min_width;
                 self.state.sidebar_max_width = config.ui.sidebar_max_width;
+                self.state.default_sidebar_sections_height = config.ui.sidebar_sections_height;
+                if self.state.sidebar_sections_height_source
+                    == state::SidebarSectionsHeightSource::ConfigDefault
+                {
+                    self.state.sidebar_sections_height = config.ui.sidebar_sections_height;
+                }
                 self.state.sidebar_collapsed_mode = config.ui.sidebar_collapsed_mode;
                 self.state.mobile_width_threshold = config.ui.mobile_width_threshold;
                 // Re-clamp the live width to the new bounds. No source guard — bounds
@@ -2692,7 +2726,7 @@ mod tests {
     }
 
     #[test]
-    fn reload_config_updates_sidebar_width_only_when_config_owned() {
+    fn reload_config_updates_sidebar_dimensions_only_when_config_owned() {
         let _guard = config_env_lock().lock().unwrap();
         let path = temp_config_path("reload-config-sidebar-width");
         std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -2703,20 +2737,38 @@ mod tests {
             app.state.sidebar_width_source,
             state::SidebarWidthSource::ConfigDefault
         );
+        assert_eq!(
+            app.state.sidebar_sections_height_source,
+            state::SidebarSectionsHeightSource::ConfigDefault
+        );
 
-        std::fs::write(&path, "[ui]\nsidebar_width = 34\n").unwrap();
+        std::fs::write(
+            &path,
+            "[ui]\nsidebar_width = 34\nsidebar_sections_height = 12\n",
+        )
+        .unwrap();
         let report = app.reload_config();
         assert_eq!(report.status, crate::config::ConfigReloadStatus::Applied);
         assert_eq!(app.state.default_sidebar_width, 34);
         assert_eq!(app.state.sidebar_width, 34);
+        assert_eq!(app.state.default_sidebar_sections_height, 12);
+        assert_eq!(app.state.sidebar_sections_height, 12);
 
         app.state.sidebar_width = 31;
         app.state.sidebar_width_source = state::SidebarWidthSource::Manual;
-        std::fs::write(&path, "[ui]\nsidebar_width = 35\n").unwrap();
+        app.state.sidebar_sections_height = 9;
+        app.state.sidebar_sections_height_source = state::SidebarSectionsHeightSource::Manual;
+        std::fs::write(
+            &path,
+            "[ui]\nsidebar_width = 35\nsidebar_sections_height = 14\n",
+        )
+        .unwrap();
         let report = app.reload_config();
         assert_eq!(report.status, crate::config::ConfigReloadStatus::Applied);
         assert_eq!(app.state.default_sidebar_width, 35);
         assert_eq!(app.state.sidebar_width, 31);
+        assert_eq!(app.state.default_sidebar_sections_height, 14);
+        assert_eq!(app.state.sidebar_sections_height, 9);
 
         std::env::remove_var(crate::config::CONFIG_PATH_ENV_VAR);
         let _ = std::fs::remove_dir_all(path.parent().unwrap());
@@ -2783,6 +2835,7 @@ placement = "below_agents"
             vec![crate::config::CustomSidebarSectionConfig {
                 id: "build".into(),
                 title: Some("Build".into()),
+                highlight_token: None,
                 max_rows: 4,
                 placement: crate::config::SidebarSectionPlacement::BelowAgents,
             }]

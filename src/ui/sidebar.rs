@@ -306,7 +306,7 @@ pub(crate) fn next_entry_is_indented_workspace(entries: &[WorkspaceListEntry], i
 }
 
 pub(crate) fn normalized_workspace_scroll(app: &AppState, area: Rect, requested: usize) -> usize {
-    let ws_area = workspace_list_rect(area, app.sidebar_section_split);
+    let ws_area = super::sidebar_sections::sidebar_regions_layout(app, area).workspace_area;
     let body = workspace_list_body_rect(ws_area, false);
     if body.height == 0 {
         return requested;
@@ -430,6 +430,7 @@ fn workspace_list_entries_inner(app: &AppState, force_expanded: bool) -> Vec<Wor
     entries
 }
 
+#[cfg(test)]
 pub(crate) fn workspace_list_rect(area: Rect, split_ratio: f32) -> Rect {
     let (ws_area, _) = expanded_sidebar_sections(area, split_ratio);
     ws_area
@@ -654,7 +655,7 @@ pub(crate) fn compute_workspace_list_areas(
     app: &AppState,
     area: Rect,
 ) -> (Vec<crate::app::state::WorkspaceCardArea>, Vec<()>) {
-    let ws_area = workspace_list_rect(area, app.sidebar_section_split);
+    let ws_area = super::sidebar_sections::sidebar_regions_layout(app, area).workspace_area;
     if ws_area == Rect::default() {
         return (Vec::new(), Vec::new());
     }
@@ -886,10 +887,15 @@ pub(super) fn render_sidebar(
         buf[(sep_x, y)].set_style(sep_style);
     }
 
-    let (ws_area, detail_area) = expanded_sidebar_sections(area, app.sidebar_section_split);
-    let layout = super::sidebar_sections::sidebar_sections_layout(app, detail_area);
+    let layout = super::sidebar_sections::sidebar_regions_layout(app, area);
 
-    render_workspace_list(app, terminal_runtimes, frame, ws_area, is_navigating);
+    render_workspace_list(
+        app,
+        terminal_runtimes,
+        frame,
+        layout.workspace_area,
+        is_navigating,
+    );
     render_agent_detail(app, terminal_runtimes, frame, layout.agent_area);
     super::sidebar_sections::render_sidebar_sections(app, frame, layout.sections_area);
     render_sidebar_toggle(app, frame, area, false, p);
@@ -1403,7 +1409,7 @@ fn render_sidebar_toggle(
     let toggle_area = if collapsed {
         collapsed_sidebar_toggle_rect(area)
     } else {
-        super::sidebar_sections::expanded_sidebar_toggle_rect_for_state(app, area)
+        expanded_sidebar_toggle_rect(area)
     };
     if toggle_area == Rect::default() {
         return;
