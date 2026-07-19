@@ -3266,6 +3266,17 @@
                 "string",
                 "null"
               ]
+            },
+            "title_spans": {
+              "description": "Styled left-aligned title fragments. When present, these override\n`title` and `title_color`.",
+              "items": {
+                "$ref": "#/schemas/request/$defs/SectionSpan"
+              },
+              "maxItems": 8,
+              "type": [
+                "array",
+                "null"
+              ]
             }
           },
           "required": [
